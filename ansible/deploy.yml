@@ -1,19 +1,31 @@
 - name: Deploy Flask App to EKS
   hosts: localhost
   gather_facts: false
+  vars:
+    workspace: "{{ lookup('env','WORKSPACE') }}"
+    region: "{{ lookup('env','AWS_DEFAULT_REGION') | default('us-east-1') }}"
   tasks:
-    - name: Update kubeconfig
-      command: aws eks update-kubeconfig --name flask-eks --region us-east-1
+    - name: Update kubeconfig for EKS (under jenkins HOME)
+      command: aws eks update-kubeconfig --name flask-eks --region {{ region }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+        AWS_SECRET_ACCESS_KEY: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+        AWS_DEFAULT_REGION: "{{ region }}"
 
-    # Helpful debug: see where we are and if k8s exists
-    - name: Show workspace and files
-      shell: |
-        echo "PWD=$(pwd)"
-        echo "WORKSPACE=$WORKSPACE"
-        ls -la
-        ls -la "$WORKSPACE" || true
-        ls -la "$WORKSPACE/k8s" || true
+    - name: Sanity check - who am I
+      command: kubectl auth can-i get pods --all-namespaces
+      environment:
+        KUBECONFIG: "{{ lookup('env','HOME') + '/.kube/config' }}"
+        AWS_ACCESS_KEY_ID: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+        AWS_SECRET_ACCESS_KEY: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+        AWS_DEFAULT_REGION: "{{ region }}"
 
     - name: Apply manifests from Jenkins workspace
-      shell: kubectl apply -f "$WORKSPACE/k8s/"
+      command: kubectl apply -f {{ workspace }}/k8s/ --validate=false
+      environment:
+        KUBECONFIG: "{{ lookup('env','HOME') + '/.kube/config' }}"
+        AWS_ACCESS_KEY_ID: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+        AWS_SECRET_ACCESS_KEY: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+        AWS_DEFAULT_REGION: "{{ region }}"
+
 
