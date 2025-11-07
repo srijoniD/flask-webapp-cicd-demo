@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-login')
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKERHUB_USERNAME = "srijoni08"
         IMAGE_NAME = "flask-cicd-demo"
     }
@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/<your-username>/flask-cicd-demo.git'
+                git branch: 'main', url: 'https://github.com/srijoni08/flask-cicd-demo.git'
             }
         }
 
@@ -23,12 +23,12 @@ pipeline {
         }
 
         stage('Push to Docker Hub') {
-            steps {
-                sh '''
-                echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-                docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:latest
-                '''
-            }
+    steps {
+        sh '''
+        echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+        docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:latest
+        '''
+    }
         }
 
         stage('Deploy to EKS using Ansible') {
