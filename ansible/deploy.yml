@@ -4,5 +4,16 @@
   tasks:
     - name: Update kubeconfig
       command: aws eks update-kubeconfig --name flask-eks --region us-east-1
-    - name: Apply manifests
-      command: kubectl apply -f k8s/
+
+    # Helpful debug: see where we are and if k8s exists
+    - name: Show workspace and files
+      shell: |
+        echo "PWD=$(pwd)"
+        echo "WORKSPACE=$WORKSPACE"
+        ls -la
+        ls -la "$WORKSPACE" || true
+        ls -la "$WORKSPACE/k8s" || true
+
+    - name: Apply manifests from Jenkins workspace
+      shell: kubectl apply -f "$WORKSPACE/k8s/"
+
