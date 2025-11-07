@@ -9,10 +9,13 @@ pipeline {
 
     stages {
         stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/srijoni08/flask-cicd-demo.git'
-            }
-        }
+    steps {
+        git branch: 'main',
+            url: 'https://github.com/srijoniD/flask-webapp-cicd-demo.git',
+            credentialsId: 'github-token'
+    }
+}
+
 
         stage('Build Docker Image') {
             steps {
