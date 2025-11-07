@@ -1,0 +1,8 @@
+- name: Deploy Flask App to EKS
+  hosts: localhost
+  tasks:
+    - name: Update kubeconfig for EKS
+      command: aws eks update-kubeconfig --name flask-eks --region us-east-1
+
+    - name: Apply Kubernetes manifests
+      command: kubectl apply -f /var/lib/jenkins/workspace/flask-cicd-demo/k8s/
